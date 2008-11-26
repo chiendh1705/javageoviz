@@ -3,7 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="swingx.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/swingx-ws"/>
+	<classpathentry kind="lib" path="swingx-ws-2008_11_23.jar"/>
 	<classpathentry kind="lib" path="swingx-bean.jar"/>
 	<classpathentry kind="lib" path="swing-worker.jar"/>
 	<classpathentry kind="output" path="bin"/>
