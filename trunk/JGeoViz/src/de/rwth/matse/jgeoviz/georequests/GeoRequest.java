@@ -2,11 +2,11 @@ package de.rwth.matse.jgeoviz.georequests;
 
 import de.rwth.matse.jgeoviz.GeoCoordinates;
 
-public interface GeoRequest {
+public abstract class GeoRequest {
 	
-	public GeoCoordinates getCoordinates();
+	public abstract GeoCoordinates getCoordinates();
 	
-	public Object[] getAdditionalInformation();
+	public abstract Object[] getAdditionalInformation();
 	
-	public String[] getAdditionalInformationDescription();
+	public abstract String[] getAdditionalInformationDescription();
 }
