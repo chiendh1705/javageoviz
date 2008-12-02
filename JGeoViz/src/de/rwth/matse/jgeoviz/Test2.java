@@ -2,6 +2,7 @@ package de.rwth.matse.jgeoviz;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
 
 import javax.swing.*;
 
@@ -10,18 +11,22 @@ import org.jdesktop.swingx.mapviewer.*;
 
 import de.rwth.matse.jgeoviz.georequests.GermanPostalCodeRequest;
 import de.rwth.matse.jgeoviz.tilefactories.*;
+import de.rwth.matse.jgeoviz.waypoints.*;
 
 public class Test2 implements ActionListener{
 	
 	JTextField command;
 	JXMapKit map;
+	JFrame f;
+	
+	WaypointPainter<JXMapViewer> painter; 
 	
 	public static void main(String[] args) {
 		new Test2();
 	}
 	
 	public Test2(){
-		JFrame f = new JFrame();
+		f = new JFrame();
 		
 		JButton submit = new JButton("Submit");
 		submit.addActionListener(this);
@@ -42,6 +47,10 @@ public class Test2 implements ActionListener{
 		controls.add(command);
 		controls.add(submit);
 		
+		painter = new WaypointPainter<JXMapViewer>();
+		painter.setRenderer(new CircularWaypointRenderer());
+		map.getMainMap().setOverlayPainter(painter);
+		
 		f.setLayout(new BorderLayout());
 		
 		f.add(controls, BorderLayout.NORTH);
@@ -55,13 +64,27 @@ public class Test2 implements ActionListener{
 
 	public void actionPerformed(ActionEvent arg0) {
 		GermanPostalCodeRequest c = new GermanPostalCodeRequest(command.getText());
-		if(c != null){
-			map.setCenterPosition(c.getCoordinates().toGeoPosition());
-		}
 		
-		for(int i=0; i<c.getAdditionalInformation().length; i++){
-			System.out.print((String)(c.getAdditionalInformation()[i]) + " ");
+		if(c != null){
+			GeoPosition pos = c.getCoordinates().toGeoPosition();
+			map.setCenterPosition(pos);
+			
+			Set<Waypoint> waypoints = painter.getWaypoints();
+			waypoints.add(new Waypoint(pos));
+			painter.setWaypoints(waypoints);
+			
+			Set<GeoPosition> positions = new HashSet<GeoPosition>();
+			Iterator<Waypoint> it = waypoints.iterator();			
+			while(it.hasNext()){
+				positions.add(it.next().getPosition());
+			}
+			map.getMainMap().calculateZoomFrom(positions);
+			
+			String title = "";
+			for(int i=0; i<c.getAdditionalInformation().length;i++){
+				title += c.getAdditionalInformation()[i] + " ";
+			}
+			f.setTitle(title);
 		}
-		System.out.println();
 	}
 }
