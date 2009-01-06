@@ -12,6 +12,11 @@ public class GeoCoordinates {
 		this.setLatitude(lat);
 		this.setLongitude(lng);
 	}
+	
+	public GeoCoordinates(GeoPosition p){
+		this.setLatitude(p.getLatitude());
+		this.setLongitude(p.getLongitude());
+	}
 
 	public double getLatitude() {
 		return latitude;
@@ -35,6 +40,17 @@ public class GeoCoordinates {
 		}else{
 			throw new GeoCoordinateException("Longitude not valid.");
 		}
+	}
+	
+	public double distance(GeoCoordinates c){
+		double distlat = (this.getLatitude()-c.getLatitude()) * Math.PI /180;
+		double distlng = (this.getLongitude()-c.getLongitude()) * Math.PI /180;
+		
+		double a = Math.sin(distlat / 2) * Math.sin(distlat / 2) + 
+		           Math.cos(this.getLatitude()) * Math.cos(c.getLatitude()) * Math.sin(distlng / 2) * Math.sin(distlng / 2);
+		
+		double d = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) * 6372.797;
+		return d;
 	}
 	
 	public String toString(){

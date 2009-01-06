@@ -9,5 +9,4 @@ public class GeoCoordinateException extends RuntimeException{
 	public GeoCoordinateException(String msg) {
 		super(msg);
 	}
-
 }

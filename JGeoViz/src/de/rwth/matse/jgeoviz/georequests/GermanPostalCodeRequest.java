@@ -1,6 +1,7 @@
 package de.rwth.matse.jgeoviz.georequests;
 
 import de.rwth.matse.jgeoviz.*;
+import de.rwth.matse.jgeoviz.exceptions.GeoPositionNotFoundException;
 
 import java.io.*;
 
@@ -41,6 +42,7 @@ public class GermanPostalCodeRequest extends GeoRequest {
 			
 			if(line == null){
 				//TODO throw Exception when postcode was not found!
+				throw new GeoPositionNotFoundException();
 			}
 			
 			this.position = new GeoCoordinates(Double.parseDouble(entries[8]), Double.parseDouble(entries[9]));
