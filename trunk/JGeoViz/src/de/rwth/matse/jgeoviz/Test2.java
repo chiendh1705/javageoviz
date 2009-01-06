@@ -9,11 +9,12 @@ import javax.swing.*;
 import org.jdesktop.swingx.*;
 import org.jdesktop.swingx.mapviewer.*;
 
+import de.rwth.matse.jgeoviz.exceptions.GeoPositionNotFoundException;
 import de.rwth.matse.jgeoviz.georequests.GermanPostalCodeRequest;
 import de.rwth.matse.jgeoviz.tilefactories.*;
 import de.rwth.matse.jgeoviz.waypoints.*;
 
-public class Test2 implements ActionListener{
+public class Test2 implements ActionListener, MouseListener{
 	
 	JTextField command;
 	JXMapKit map;
@@ -51,6 +52,8 @@ public class Test2 implements ActionListener{
 		painter.setRenderer(new CircularWaypointRenderer());
 		map.getMainMap().setOverlayPainter(painter);
 		
+		map.getMainMap().addMouseListener(this);
+		
 		f.setLayout(new BorderLayout());
 		
 		f.add(controls, BorderLayout.NORTH);
@@ -63,14 +66,21 @@ public class Test2 implements ActionListener{
 	}
 
 	public void actionPerformed(ActionEvent arg0) {
-		GermanPostalCodeRequest c = new GermanPostalCodeRequest(command.getText());
+		GermanPostalCodeRequest c = null;
+		
+		try{
+			c = new GermanPostalCodeRequest(command.getText());
+		}catch(GeoPositionNotFoundException e){
+			System.out.println(e);
+		}
 		
 		if(c != null){
 			GeoPosition pos = c.getCoordinates().toGeoPosition();
 			map.setCenterPosition(pos);
 			
 			Set<Waypoint> waypoints = painter.getWaypoints();
-			waypoints.add(new Waypoint(pos));
+			Waypoint wpoint = new Waypoint(pos);
+			waypoints.add(wpoint);
 			painter.setWaypoints(waypoints);
 			
 			Set<GeoPosition> positions = new HashSet<GeoPosition>();
@@ -86,5 +96,54 @@ public class Test2 implements ActionListener{
 			}
 			f.setTitle(title);
 		}
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		GeoCoordinates mouse = new GeoCoordinates(map.getMainMap().convertPointToGeoPosition(e.getLocationOnScreen()));
+		System.out.println(mouse);
+		GeoCoordinates wayp = null;
+		GeoCoordinates close = null;
+		Set<Waypoint> waypoints = painter.getWaypoints();
+		Iterator<Waypoint> it = waypoints.iterator();
+		
+		double distance = Double.MAX_VALUE;
+		
+		while(it.hasNext()){
+			wayp = new GeoCoordinates(it.next().getPosition());
+			double distToWp = wayp.distance(mouse);
+			if(distance > distToWp){
+				distance=distToWp;
+				close = wayp;
+			}
+		}
+		
+		System.out.println(distance);
+		// TODO change distance to 50 pixels depending on the maps zoom level
+		if(distance < 2)System.out.println(close);
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 }
