@@ -28,6 +28,7 @@ public class CachedTileFactoryInfo extends TileFactoryInfo {
 	    	File f = new File(local + path + filename);
 	    	
 	    	if(!f.exists()){
+	    		System.out.println("load!");
 	        	u = new URL(this.baseURL + path + filename);
 	        	InputStream is = u.openStream();
 	        	f = new File(local + path);
@@ -44,10 +45,10 @@ public class CachedTileFactoryInfo extends TileFactoryInfo {
 	        	fos.close();
 	    	}
 	    	
-	    	u = new File(local + path + filename).toURL();
+	    	u = new File(local + path + filename).toURI().toURL();
 	    }catch(Exception e){
 	    	try{
-				u = new File("./res/images/empty.png").toURL();
+				u = new File("./res/images/empty.png").toURI().toURL();
 			}catch (MalformedURLException e1) {
 		    	System.err.println(e);
 			}

@@ -2,6 +2,7 @@ package de.rwth.matse.jgeoviz;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.Point2D;
 import java.util.*;
 
 import javax.swing.*;
@@ -63,64 +64,81 @@ public class Test2 implements ActionListener, MouseListener{
 		f.setSize(600,400);
 		
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		//TEST Fimendaten:
+		String[] plzs = {"52062", "52074", "52076", "12045", 
+						 "60314", "52074", "50672", "52409", 
+						 "52072", "52068", "41836", "52428",
+						 "52425", "52068", "80807", "16761",
+						 "52068", "52428", "52072", "81369",
+						 "82024", "52072", "01187", "52072",
+						 "44629", "10405", "64293", "52070",
+						 "52428", "52220", "52076", "52072"};
+		for(int i=0;i<plzs.length; i++){
+			this.addWaypoint(plzs[i]);
+		}
 	}
 
 	public void actionPerformed(ActionEvent arg0) {
-		GermanPostalCodeRequest c = null;
-		
-		try{
-			c = new GermanPostalCodeRequest(command.getText());
-		}catch(GeoPositionNotFoundException e){
-			System.out.println(e);
-		}
-		
-		if(c != null){
-			GeoPosition pos = c.getCoordinates().toGeoPosition();
-			map.setCenterPosition(pos);
-			
-			Set<Waypoint> waypoints = painter.getWaypoints();
-			Waypoint wpoint = new Waypoint(pos);
-			waypoints.add(wpoint);
-			painter.setWaypoints(waypoints);
-			
-			Set<GeoPosition> positions = new HashSet<GeoPosition>();
-			Iterator<Waypoint> it = waypoints.iterator();			
-			while(it.hasNext()){
-				positions.add(it.next().getPosition());
-			}
-			map.getMainMap().calculateZoomFrom(positions);
-			
-			String title = "";
-			for(int i=0; i<c.getAdditionalInformation().length;i++){
-				title += c.getAdditionalInformation()[i] + " ";
-			}
-			f.setTitle(title);
-		}
+		this.addWaypoint(command.getText());
 	}
 
+	public void addWaypoint(String plz){
+		Set<Waypoint> waypoints = painter.getWaypoints();
+		try{
+			SizeableWaypoint wpoint = new GermanAddressWaypoint(plz);
+			waypoints.add(wpoint);
+			map.setCenterPosition(wpoint.getPosition());
+		}catch(GeoPositionNotFoundException e){
+			System.err.println(e.getMessage());
+			System.err.println(plz);
+		}		
+		Set<GeoPosition> positions = new HashSet<GeoPosition>();
+		Iterator<Waypoint> it = waypoints.iterator();			
+		while(it.hasNext()){
+			positions.add(it.next().getPosition());
+		}
+		map.getMainMap().calculateZoomFrom(positions);
+	}
+	
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		GeoCoordinates mouse = new GeoCoordinates(map.getMainMap().convertPointToGeoPosition(e.getLocationOnScreen()));
-		System.out.println(mouse);
-		GeoCoordinates wayp = null;
-		GeoCoordinates close = null;
+		Point point = e.getPoint();
+		GeoCoordinates mouse = new GeoCoordinates(map.getMainMap().convertPointToGeoPosition(point));
+		GeoCoordinates waypCoord = null;
+		GeoCoordinates closeCoord = null;		
+		Waypoint wayp = null;
+		Waypoint close = null;
 		Set<Waypoint> waypoints = painter.getWaypoints();
 		Iterator<Waypoint> it = waypoints.iterator();
 		
 		double distance = Double.MAX_VALUE;
 		
 		while(it.hasNext()){
-			wayp = new GeoCoordinates(it.next().getPosition());
-			double distToWp = wayp.distance(mouse);
+			wayp = it.next();
+			waypCoord = new GeoCoordinates(wayp.getPosition());
+			double distToWp = waypCoord.distance(mouse);
+			if(Math.abs(distance-distToWp) < 0.1){
+				if(waypCoord.distance(closeCoord) < 0.1){
+					System.out.println("too close!");
+					GeoPosition pos = wayp.getPosition();
+					double lat = pos.getLatitude()+(0.004*Math.random()-0.002);
+					double lon = pos.getLongitude()+(0.004*Math.random()-0.002);
+					wayp.setPosition(new GeoPosition(lat,lon));
+					map.repaint();
+				}
+			}
 			if(distance > distToWp){
 				distance=distToWp;
+				closeCoord = waypCoord;
 				close = wayp;
 			}
 		}
-		
-		System.out.println(distance);
-		// TODO change distance to 50 pixels depending on the maps zoom level
-		if(distance < 2)System.out.println(close);
+		Point2D waypointPixel = map.getMainMap().getTileFactory().geoToPixel(closeCoord.toGeoPosition(), map.getMainMap().getZoom());
+		Point2D clickPixel = map.getMainMap().getTileFactory().geoToPixel(mouse.toGeoPosition(), map.getMainMap().getZoom());
+		if(clickPixel.distance(waypointPixel)<15){
+			System.out.println(((GermanAddressWaypoint)close).getPostalc() + " "+ ((GermanAddressWaypoint)close).getCity());
+		}
 	}
 
 	@Override

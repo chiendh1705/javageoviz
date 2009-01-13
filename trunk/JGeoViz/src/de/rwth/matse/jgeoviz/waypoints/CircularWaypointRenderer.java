@@ -14,10 +14,11 @@ public class CircularWaypointRenderer implements WaypointRenderer{
 		int size = swp.getSize();
 		
 		g.setColor(swp.getColor());
-		g.fillOval(-size/2, -size/2, size/2, size/2);
+		g.fillOval(-size/2, -size/2, size, size);
+		//g.fillOval(0, 0, size,size);
 		
 		g.setColor(Color.BLACK);
-		g.drawOval(-size/2, -size/2, size/2, size/2);
+		g.drawOval(-size/2, -size/2, size, size);
 		
 		return true;
 	}

@@ -16,7 +16,7 @@ public class SizeableWaypoint extends Waypoint{
 			size = ((SizeableWaypoint)wp).getSize();
 		}else{
 			color = new Color(0,255,0,127);
-			size = 30;
+			size = 25;
 		}
 	}
 	
